@@ -1,0 +1,776 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#030806">
+  <meta name="description" content="Терминальный трекер капитала PRO: спортивные ставки, крипто, акции, пассивный доход, аналитика, бюджеты и экспорт отчётов.">
+  <title>АРХИТЕКТОР КАПИТАЛА PRO // ТРЕКЕР</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' fill='%23030806'/%3E%3Cpath d='M8 32 L32 14 L56 32 L32 50 Z' fill='none' stroke='%2300ff66' stroke-width='3'/%3E%3Ccircle cx='32' cy='32' r='6' fill='%2300ff66'/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="manifest" href="manifest.json">
+</head>
+<body data-accent="green">
+  <canvas id="matrix" aria-hidden="true"></canvas>
+  <div class="vignette" aria-hidden="true"></div>
+  <div class="scanbeam" aria-hidden="true"></div>
+  <div class="scanlines" aria-hidden="true"></div>
+
+  <!-- Оверлей загрузки -->
+  <div id="loadingOverlay" class="loading-overlay">
+    <div class="loading-spinner"></div>
+    <div class="loading-text">ЗАГРУЗКА СИСТЕМЫ...</div>
+  </div>
+
+  <div class="app">
+    <header class="topbar">
+      <div class="brand">
+        <div class="brand-mark" aria-hidden="true">
+          <img src="assets/neo-kannep-mark.svg" alt="">
+        </div>
+        <div class="brand-copy">
+          <div class="brand-kicker">// СИСТЕМА УЧЁТА КАПИТАЛА · v2.0 PRO</div>
+          <h1 class="brand-title glitch" id="brandTitle" data-text="АРХИТЕКТОР КАПИТАЛА PRO">АРХИТЕКТОР КАПИТАЛА PRO</h1>
+          <div class="brand-sub">
+            <span class="brand-mascot">NEO-KANNEP</span>
+            <span class="brand-role">// THE ORACLE BROKER</span>
+            <span class="live-dot" aria-hidden="true"></span>
+            <span id="demoBadge" class="badge-demo">DEMO</span>
+          </div>
+        </div>
+      </div>
+      <div class="topbar-side">
+        <div class="clock" aria-label="Текущее время">
+          <span id="clockTime">--:--:--</span>
+          <span id="clockDate">--.--.----</span>
+        </div>
+        <div class="phase-chip" id="phaseChip">ФАЗА 01 // СТАВКИ</div>
+        <button class="mode-btn" id="globalSearchBtn" type="button" data-action="global-search" title="Глобальный поиск (Ctrl+K)">🔍 ПОИСК</button>
+        <button class="mode-btn" id="accentBtn" type="button" data-action="toggle-accent" title="Переключить цветовой режим">РЕЖИМ: GREEN</button>
+        <button class="btn btn-primary" type="button" data-action="new-bet">+ СТАВКА</button>
+      </div>
+    </header>
+
+    <nav class="tabs" role="tablist" aria-label="Разделы приложения">
+      <button class="tab is-active" type="button" role="tab" aria-selected="true" data-tab="dashboard"><span>01</span> ДАШБОРД</button>
+      <button class="tab" type="button" role="tab" aria-selected="false" data-tab="bets"><span>02</span> СТАВКИ</button>
+      <button class="tab" type="button" role="tab" aria-selected="false" data-tab="capital"><span>03</span> КАПИТАЛ</button>
+      <button class="tab" type="button" role="tab" aria-selected="false" data-tab="analytics"><span>04</span> АНАЛИТИКА</button>
+      <button class="tab" type="button" role="tab" aria-selected="false" data-tab="journal"><span>05</span> ЖУРНАЛ</button>
+      <button class="tab" type="button" role="tab" aria-selected="false" data-tab="archive"><span>06</span> АРХИВ</button>
+      <button class="tab" type="button" role="tab" aria-selected="false" data-tab="calendar"><span>07</span> КАЛЕНДАРЬ</button>
+      <button class="tab" type="button" role="tab" aria-selected="false" data-tab="settings"><span>08</span> НАСТРОЙКИ</button>
+      <div class="tabs-fill"></div>
+      <div class="tabs-status"><span class="live-dot" aria-hidden="true"></span> СИСТЕМА ОНЛАЙН</div>
+    </nav>
+
+    <main class="main">
+      <!-- ДАШБОРД -->
+      <section class="view is-active" id="view-dashboard" data-view="dashboard" role="tabpanel">
+        <div class="view-head">
+          <div>
+            <div class="panel-kicker">[01] // ОБЗОР</div>
+            <h2 class="view-title">ДАШБОРД</h2>
+            <p class="view-sub">Общее состояние капитала, динамика и дисциплина в одном экране.</p>
+          </div>
+          <button class="btn btn-ghost" type="button" data-action="print-dashboard-report">ОТЧЁТ ЗА ВСЁ ВРЕМЯ</button>
+        </div>
+        <div class="kpi-grid" id="kpiGrid"></div>
+        <div class="dash-grid">
+          <section class="panel panel-chart">
+            <div class="panel-head">
+              <div>
+                <div class="panel-kicker">[01] // ТРАЕКТОРИЯ</div>
+                <h2 class="panel-title">КРИВАЯ КАПИТАЛА</h2>
+              </div>
+              <div class="chart-controls">
+                <div class="seg" id="chartMetric">
+                  <button type="button" data-metric="value" class="is-active">КАПИТАЛ</button>
+                  <button type="button" data-metric="profit">ПРИБЫЛЬ</button>
+                </div>
+                <div class="seg" id="chartRange">
+                  <button type="button" data-range="30">30Д</button>
+                  <button type="button" data-range="90">90Д</button>
+                  <button type="button" data-range="all" class="is-active">ВСЁ</button>
+                </div>
+              </div>
+            </div>
+            <div class="chart-wrap" id="equityChart"></div>
+          </section>
+          <aside class="panel panel-discipline">
+            <div class="panel-head">
+              <div>
+                <div class="panel-kicker">[02] // ПРОТОКОЛ</div>
+                <h2 class="panel-title">ДИСЦИПЛИНА</h2>
+              </div>
+              <span class="panel-tag">FLAT</span>
+            </div>
+            <div id="discipline"></div>
+          </aside>
+        </div>
+        <div class="dash-grid dash-grid-2">
+          <section class="panel">
+            <div class="panel-head">
+              <div>
+                <div class="panel-kicker">[03] // ДЕКОМПОЗИЦИЯ</div>
+                <h2 class="panel-title">СТРУКТУРА ПРИБЫЛИ</h2>
+              </div>
+            </div>
+            <div class="donut-wrap" id="profitDonut"></div>
+            <div class="legend" id="profitLegend"></div>
+          </section>
+          <section class="panel">
+            <div class="panel-head">
+              <div>
+                <div class="panel-kicker">[04] // ПОСЛЕДНИЕ СОБЫТИЯ</div>
+                <h2 class="panel-title">ЛЕНТА ОПЕРАЦИЙ</h2>
+              </div>
+              <button class="link-btn" type="button" data-tab="journal">ЖУРНАЛ →</button>
+            </div>
+            <div class="recent-list" id="recentList"></div>
+          </section>
+        </div>
+        <div class="roadmap" id="roadmap"></div>
+      </section>
+
+      <!-- СТАВКИ -->
+      <section class="view" id="view-bets" data-view="bets" role="tabpanel">
+        <div class="view-head">
+          <div>
+            <div class="panel-kicker">[02] // СПОРТ-БЕТТИНГ</div>
+            <h2 class="view-title">ЖУРНАЛ СТАВОК</h2>
+            <p class="view-sub">Каждая ставка — строка кода. Каждый расчёт — обновление системы.</p>
+          </div>
+          <button class="btn btn-primary" type="button" data-action="new-bet">+ НОВАЯ СТАВКА</button>
+        </div>
+        <div class="stat-chips" id="betStats"></div>
+        <section class="panel">
+          <div class="toolbar">
+            <div class="seg" id="betFilter">
+              <button type="button" data-bet-filter="all" class="is-active">ВСЕ</button>
+              <button type="button" data-bet-filter="pending">В ИГРЕ</button>
+              <button type="button" data-bet-filter="won">ВЫИГРЫШ</button>
+              <button type="button" data-bet-filter="lost">ПРОИГРЫШ</button>
+              <button type="button" data-bet-filter="void">ВОЗВРАТ</button>
+              <button type="button" data-bet-filter="cashout">КЭШАУТ</button>
+              <button type="button" data-bet-filter="archived">В АРХИВЕ</button>
+            </div>
+            <input class="input search" id="betSearch" type="search" placeholder="ПОИСК: СОБЫТИЕ, ТУРНИР, РЫНОК, ТЕГ..." autocomplete="off">
+          </div>
+          <div class="bulk-actions" id="bulkActions" style="display:none;padding:10px 14px;border:1px solid var(--line);background:var(--panel);margin-bottom:14px;flex-wrap:wrap;gap:10px;align-items:center;">
+            <span class="bulk-count" style="color:var(--text-faint);font-size:9px;">Выбрано: <b id="bulkCount">0</b></span>
+            <button class="btn btn-ghost" type="button" data-action="bulk-archive" title="Архивировать выбранные">В АРХИВ</button>
+            <button class="btn btn-ghost" type="button" data-action="bulk-delete" title="Удалить выбранные безвозвратно">УДАЛИТЬ</button>
+            <div class="seg" style="margin-left:auto;">
+              <button type="button" data-bulk-status="won" class="is-active">ВЫИГРЫШ</button>
+              <button type="button" data-bulk-status="lost">ПРОИГРЫШ</button>
+              <button type="button" data-bulk-status="void">ВОЗВРАТ</button>
+            </div>
+            <button class="btn btn-primary" type="button" data-action="bulk-settle">ПРИМЕНИТЬ СТАТУС</button>
+            <button class="btn btn-ghost" type="button" data-action="bulk-select-all" style="margin-left:auto;">ВЫДЕЛИТЬ ВСЕ</button>
+          </div>
+          <div class="table-wrap">
+            <table class="data-table" id="betsTable">
+              <thead>
+                <tr>
+                  <th class="select-col"><input type="checkbox" id="selectAllBets" title="Выделить всё"></th>
+                  <th class="sortable" data-sort="date">ДАТА <span class="sort-indicator" id="sort-date">▾</span></th>
+                  <th class="sortable" data-sort="event">СОБЫТИЕ / РЫНОК <span class="sort-indicator" id="sort-event"></span></th>
+                  <th class="num sortable" data-sort="odds">КЭФ <span class="sort-indicator" id="sort-odds"></span></th>
+                  <th class="num sortable" data-sort="stake">СТАВКА <span class="sort-indicator" id="sort-stake"></span></th>
+                  <th class="sortable" data-sort="tags">ТЕГИ <span class="sort-indicator" id="sort-tags"></span></th>
+                  <th>СТАТУС</th>
+                  <th class="num sortable" data-sort="profit">P&amp;L <span class="sort-indicator" id="sort-profit"></span></th>
+                  <th class="actions-col">ДЕЙСТВИЯ</th>
+                </tr>
+              </thead>
+              <tbody></tbody>
+            </table>
+          </div>
+        </section>
+      </section>
+
+      <!-- КАПИТАЛ -->
+      <section class="view" id="view-capital" data-view="capital" role="tabpanel">
+        <div class="view-head">
+          <div>
+            <div class="panel-kicker">[03] // МУЛЬТИ-КАПИТАЛ</div>
+            <h2 class="view-title">НАПРАВЛЕНИЯ И КАПИТАЛ</h2>
+            <p class="view-sub">Спорт, крипто, акции, пассивный доход — один банк, одна система учёта.</p>
+          </div>
+          <div class="head-actions">
+            <button class="btn btn-ghost" type="button" data-action="new-strategy">+ НАПРАВЛЕНИЕ</button>
+            <button class="btn btn-primary" type="button" data-action="new-op">+ ОПЕРАЦИЯ</button>
+          </div>
+        </div>
+        <div class="strategy-grid" id="strategyGrid"></div>
+        <div class="dash-grid dash-grid-2">
+          <section class="panel">
+            <div class="panel-head">
+              <div>
+                <div class="panel-kicker">[04] // БАЛАНС</div>
+                <h2 class="panel-title">РЕКОНСИЛИАЦИЯ КАПИТАЛА</h2>
+              </div>
+            </div>
+            <div class="reconciliation" id="reconciliation"></div>
+          </section>
+          <section class="panel">
+            <div class="panel-head">
+              <div>
+                <div class="panel-kicker">[05] // ДВИЖЕНИЕ</div>
+                <h2 class="panel-title">ОПЕРАЦИИ КАПИТАЛА</h2>
+              </div>
+              <button class="link-btn" type="button" data-action="new-op">+ ДОБАВИТЬ</button>
+            </div>
+            <div class="ledger" id="capitalLedger"></div>
+          </section>
+        </div>
+      </section>
+
+      <!-- АНАЛИТИКА -->
+      <section class="view" id="view-analytics" data-view="analytics" role="tabpanel">
+        <div class="view-head">
+          <div>
+            <div class="panel-kicker">[04] // АНАЛИТИКА ЭФФЕКТИВНОСТИ</div>
+            <h2 class="view-title">СТАТИСТИКА СТАВОК</h2>
+            <p class="view-sub">Выявление закономерностей: по лигам, рынкам, коэффициентам, дням недели и тегам.</p>
+          </div>
+          <button class="btn btn-ghost" type="button" data-action="export-analytics-csv">ЭКСПОРТ CSV</button>
+          <button class="btn btn-primary" type="button" data-action="print-analytics">ПЕЧАТЬ ОТЧЁТА</button>
+        </div>
+        <div class="analytics-grid">
+          <section class="panel">
+            <div class="panel-head">
+              <div>
+                <div class="panel-kicker">// ЛИГИ</div>
+                <h3 class="panel-title">ПО ТУРНИРАМ</h3>
+              </div>
+            </div>
+            <div class="analytics-table-wrap" id="analyticsLeagues"></div>
+          </section>
+          <section class="panel">
+            <div class="panel-head">
+              <div>
+                <div class="panel-kicker">// РЫНКИ</div>
+                <h3 class="panel-title">ПО РЫНКАМ</h3>
+              </div>
+            </div>
+            <div class="analytics-table-wrap" id="analyticsMarkets"></div>
+          </section>
+          <section class="panel">
+            <div class="panel-head">
+              <div>
+                <div class="panel-kicker">// КОЭФФИЦИЕНТЫ</div>
+                <h3 class="panel-title">ПО ДИАПАЗОНАМ КЭФА</h3>
+              </div>
+            </div>
+            <div class="analytics-table-wrap" id="analyticsOdds"></div>
+          </section>
+          <section class="panel">
+            <div class="panel-head">
+              <div>
+                <div class="panel-kicker">// ДНИ НЕДЕЛИ</div>
+                <h3 class="panel-title">ПО ДНЯМ</h3>
+              </div>
+            </div>
+            <div class="analytics-table-wrap" id="analyticsWeekdays"></div>
+          </section>
+          <section class="panel">
+            <div class="panel-head">
+              <div>
+                <div class="panel-kicker">// ТЕГИ</div>
+                <h3 class="panel-title">ПО ТЕГАМ</h3>
+              </div>
+            </div>
+            <div class="analytics-table-wrap" id="analyticsTags"></div>
+          </section>
+          <section class="panel">
+            <div class="panel-head">
+              <div>
+                <div class="panel-kicker">// МЕСЯЦЫ</div>
+                <h3 class="panel-title">ПО МЕСЯЦАМ</h3>
+              </div>
+            </div>
+            <div class="analytics-table-wrap" id="analyticsMonths"></div>
+          </section>
+        </div>
+      </section>
+
+      <!-- ЖУРНАЛ -->
+      <section class="view" id="view-journal" data-view="journal" role="tabpanel">
+        <div class="view-head">
+          <div>
+            <div class="panel-kicker">[05] // ПОЛНЫЙ ЛОГ</div>
+            <h2 class="view-title">ЖУРНАЛ ОПЕРАЦИЙ</h2>
+            <p class="view-sub">Все ставки и движения капитала в одной хронологии.</p>
+          </div>
+          <div class="head-actions">
+            <button class="btn btn-ghost" type="button" data-action="export-csv">ЭКСПОРТ CSV</button>
+            <button class="btn btn-primary" type="button" data-action="new-bet">+ СТАВКА</button>
+          </div>
+        </div>
+        <div class="toolbar toolbar-panel">
+          <div class="seg" id="journalFilter">
+            <button type="button" data-journal-filter="all" class="is-active">ВСЁ</button>
+            <button type="button" data-journal-filter="bets">СТАВКИ</button>
+            <button type="button" data-journal-filter="ops">КАПИТАЛ</button>
+          </div>
+          <input class="input search" id="journalSearch" type="search" placeholder="ПОИСК ПО ЖУРНАЛУ..." autocomplete="off">
+        </div>
+        <div class="journal-list" id="journalList"></div>
+      </section>
+
+      <!-- АРХИВ -->
+      <section class="view" id="view-archive" data-view="archive" role="tabpanel">
+        <div class="view-head">
+          <div>
+            <div class="panel-kicker">[06] // АРХИВ</div>
+            <h2 class="view-title">УДАЛЁННЫЕ ЗАПИСИ</h2>
+            <p class="view-sub">Мягкое удаление: записи можно восстановить или безвозвратно удалить.</p>
+          </div>
+          <button class="btn btn-ghost" type="button" data-action="export-archive-csv">ЭКСПОРТ CSV</button>
+        </div>
+        <div class="toolbar toolbar-panel">
+          <div class="seg" id="archiveFilter">
+            <button type="button" data-archive-filter="all" class="is-active">ВСЁ</button>
+            <button type="button" data-archive-filter="bets">СТАВКИ</button>
+            <button type="button" data-archive-filter="ops">КАПИТАЛ</button>
+          </div>
+          <input class="input search" id="archiveSearch" type="search" placeholder="ПОИСК ПО АРХИВУ..." autocomplete="off">
+        </div>
+        <div class="archive-list" id="archiveList"></div>
+      </section>
+
+      <!-- КАЛЕНДАРЬ -->
+      <section class="view" id="view-calendar" data-view="calendar" role="tabpanel">
+        <div class="view-head">
+          <div>
+            <div class="panel-kicker">[07] // КАЛЕНДАРЬ СТАВОК</div>
+            <h2 class="view-title">КАЛЕНДАРЬ</h2>
+            <p class="view-sub">Визуализация ставок по дням месяца. Клик на дату — детали ставок.</p>
+          </div>
+          <div class="head-actions">
+            <button class="btn btn-ghost" type="button" data-action="calendar-prev">‹ ПРЕДЫДУЩИЙ МЕСЯЦ</button>
+            <button class="btn btn-ghost" type="button" data-action="calendar-next">СЛЕДУЮЩИЙ МЕСЯЦ ›</button>
+            <button class="btn btn-primary" type="button" data-action="new-bet">+ СТАВКА</button>
+          </div>
+        </div>
+        <div class="calendar-wrap" id="calendarWrap">
+          <div class="calendar-header" id="calendarHeader"></div>
+          <div class="calendar-grid" id="calendarGrid"></div>
+        </div>
+        <div class="calendar-day-detail" id="calendarDayDetail"></div>
+      </section>
+
+      <!-- НАСТРОЙКИ -->
+      <section class="view" id="view-settings" data-view="settings" role="tabpanel">
+        <div class="view-head">
+          <div>
+            <div class="panel-kicker">[07] // КОНФИГУРАЦИЯ</div>
+            <h2 class="view-title">НАСТРОЙКИ СИСТЕМЫ</h2>
+            <p class="view-sub">Параметры проекта, валюта, цели, уведомления и резервные копии.</p>
+          </div>
+        </div>
+        <div class="settings-grid">
+          <section class="panel">
+            <div class="panel-head">
+              <div>
+                <div class="panel-kicker">[01] // ПАРАМЕТРЫ</div>
+                <h2 class="panel-title">ЯДРО ПРОЕКТА</h2>
+              </div>
+            </div>
+            <form id="settingsForm" class="form-grid" autocomplete="off">
+              <label class="span-2">НАЗВАНИЕ ПРОЕКТА
+                <input class="input" type="text" name="projectName" maxlength="48" required>
+              </label>
+              <label>ВАЛЮТА
+                <select class="input" name="currency">
+                  <option value="₽">₽ — рубль</option>
+                  <option value="$">$ — доллар</option>
+                  <option value="€">€ — евро</option>
+                  <option value="₸">₸ — тенге</option>
+                  <option value="BYN">BYN — белорусский рубль</option>
+                  <option value="£">£ — фунт</option>
+                  <option value="¥">¥ — иена</option>
+                </select>
+              </label>
+              <label>БАЗОВАЯ ВАЛЮТА (для конвертации)
+                <select class="input" name="baseCurrency">
+                  <option value="₽">₽ — рубль</option>
+                  <option value="$">$ — доллар</option>
+                  <option value="€">€ — евро</option>
+                  <option value="BYN">BYN — белорусский рубль</option>
+                </select>
+              </label>
+              <label class="span-2">КУРСЫ ВАЛЮТ (JSON, относительно базовой)
+                <textarea class="input" name="currencyRates" rows="2" maxlength="200" placeholder='{"$": 0.012, "€": 0.011, "BYN": 0.32}'></textarea>
+                <small class="field-hint">1 единица базовой валюты = X единиц целевой</small>
+                <button class="btn btn-ghost" type="button" data-action="update-currency-rates" style="margin-top:8px;">ОБНОВИТЬ КУРСЫ ИЗ API</button>
+              </label>
+              <label>ДАТА СТАРТА
+                <input class="input" type="date" name="startDate" required>
+              </label>
+              <label>СТАРТОВЫЙ КАПИТАЛ
+                <input class="input" type="number" name="startCapital" min="0" step="0.01" required>
+              </label>
+              <label>ЦЕЛЬ ПРОЕКТА (общая)
+                <input class="input" type="number" name="goal" min="1" step="0.01" required>
+              </label>
+              <label>МЕСЯЧНАЯ ЦЕЛЬ ПРИБЫЛИ
+                <input class="input" type="number" name="monthlyGoal" min="0" step="0.01" placeholder="0 — отключено">
+              </label>
+              <label>ФЛЭТ, % ОТ БАНКА
+                <input class="input" type="number" name="riskFlat" min="0.1" max="100" step="0.1" required>
+              </label>
+              <label>РАЗДЕЛИТЕЛЬ CSV
+                <select class="input" name="csvSeparator">
+                  <option value=";">; (точка с запятой)</option>
+                  <option value=",">, (запятая)</option>
+                  <option value="	">Табуляция</option>
+                </select>
+              </label>
+              <label>ЦВЕТОВОЙ РЕЖИМ
+                <select class="input" name="accent">
+                  <option value="green">GREEN — зелёная таблетка</option>
+                  <option value="red">RED — красная таблетка</option>
+                  <option value="cyan">CYAN — холодный режим</option>
+                  <option value="purple">PURPLE — неоновый фиолет</option>
+                  <option value="orange">ORANGE — неоновый оранжевый</option>
+                  <option value="pink">PINK — неоновый розовый</option>
+                </select>
+              </label>
+              <label>ТЕМА ОФОРМЛЕНИЯ
+                <select class="input" name="theme">
+                  <option value="dark">DARK — тёмный терминал</option>
+                  <option value="light">LIGHT — светлый режим</option>
+                  <option value="matrix">MATRIX — матричный резонанс</option>
+                </select>
+              </label>
+              <label class="span-2">ШИФРОВАНИЕ ДАННЫХ
+                <label class="checkbox-row"><input type="checkbox" name="encryptData" id="encryptData"> Зашифровать localStorage (требуется пароль)</label>
+              </label>
+              <label class="span-2 is-hidden" id="encryptPasswordRow">ПАРОЛЬ ДЛЯ ШИФРОВАНИЯ
+                <input class="input" type="password" name="encryptPassword" maxlength="64" placeholder="Минимум 8 символов">
+              </label>
+              <label class="span-2">УВЕДОМЛЕНИЯ
+                <label class="checkbox-row"><input type="checkbox" name="notifyGoal" checked> Достижение цели проекта</label>
+                <label class="checkbox-row"><input type="checkbox" name="notifyDrawdown" checked> Просадка больше 10%</label>
+                <label class="checkbox-row"><input type="checkbox" name="notifyMonthly"> Месячная цель прибыли</label>
+              </label>
+              <div class="span-2 form-actions">
+                <button class="btn btn-primary" type="submit">СОХРАНИТЬ КОНФИГ</button>
+              </div>
+            </form>
+          </section>
+          <section class="panel">
+            <div class="panel-head">
+              <div>
+                <div class="panel-kicker">[02] // BACKUP</div>
+                <h2 class="panel-title">ДАННЫЕ</h2>
+              </div>
+            </div>
+            <div class="data-actions">
+              <button class="btn btn-ghost" type="button" data-action="export-json">ЭКСПОРТ JSON</button>
+              <button class="btn btn-ghost" type="button" data-action="import-json">ИМПОРТ JSON</button>
+              <button class="btn btn-ghost" type="button" data-action="import-csv">ИМПОРТ CSV</button>
+              <button class="btn btn-ghost" type="button" data-action="export-csv">ЭКСПОРТ CSV</button>
+              <button class="btn btn-ghost" type="button" data-action="export-xlsx-bets">ЭКСПОРТ XLSX (СТАВКИ)</button>
+              <button class="btn btn-ghost" type="button" data-action="export-xlsx-ops">ЭКСПОРТ XLSX (ОПЕРАЦИИ)</button>
+              <button class="btn btn-ghost" type="button" data-action="export-xlsx-all">ЭКСПОРТ XLSX (ВСЁ)</button>
+            </div>
+            <input type="file" id="importFile" accept="application/json,.json,text/csv,.csv" hidden>
+            <div class="data-note">
+              <p>Все данные хранятся <b>локально в этом браузере</b> (localStorage). Никакой сервер их не получает. Для переноса на другое устройство используйте JSON-экспорт.</p>
+              <div class="storage-line" id="storageInfo">—</div>
+            </div>
+            <div class="danger-zone">
+              <div class="danger-title">// ОПАСНАЯ ЗОНА</div>
+              <button class="btn btn-ghost" type="button" data-action="reset-demo">ЗАГРУЗИТЬ ДЕМО-ДАННЫЕ</button>
+              <button class="btn btn-ghost" type="button" data-action="restore-archive">ВОССТАНОВИТЬ ИЗ АРХИВА (всё)</button>
+              <button class="btn btn-danger" type="button" data-action="clear-data">ОЧИСТИТЬ ВСЕ ДАННЫЕ</button>
+            </div>
+            <div class="system-meta">
+              <span>CAPITAL-ARCHITECT v2.0 PRO</span>
+              <span>LOCAL-FIRST</span>
+              <span>NO TRACKING</span>
+            </div>
+          </section>
+        </div>
+      </section>
+    </main>
+
+    <footer class="footer">
+      <span>// АРХИТЕКТОР КАПИТАЛА PRO · СИСТЕМА УЧЁТА</span>
+      <span>ДЕКОДИРУЕМ РЕАЛЬНОСТЬ. СТРОИМ КАПИТАЛ.</span>
+    </footer>
+  </div>
+
+  <!-- МОДАЛ: СТАВКА -->
+  <dialog class="modal" id="betDialog">
+    <form id="betForm" class="modal-form" autocomplete="off">
+      <div class="modal-head">
+        <div>
+          <div class="panel-kicker">// ВВОД ДАННЫХ</div>
+          <h3 class="modal-title" id="betDialogTitle">ВВОД В ИГРУ</h3>
+        </div>
+        <button class="modal-close" type="button" data-close aria-label="Закрыть">×</button>
+      </div>
+      <div class="form-grid">
+        <label>ДАТА
+          <input class="input" type="date" name="date" required>
+        </label>
+        <label>НАПРАВЛЕНИЕ
+          <select class="input" name="strategyId"></select>
+        </label>
+        <label class="span-2">СОБЫТИЕ
+          <input class="input" type="text" name="event" maxlength="80" placeholder="Реал Мадрид — Барселона" required>
+        </label>
+        <label>ТУРНИР
+          <input class="input" type="text" name="league" maxlength="40" placeholder="Ла Лига">
+        </label>
+        <label>РЫНОК
+          <input class="input" type="text" name="market" maxlength="30" placeholder="ТБ 2.5">
+        </label>
+        <label>КОЭФФИЦИЕНТ
+          <input class="input" type="number" name="odds" min="1.01" step="0.01" placeholder="1.85" required>
+        </label>
+        <label>СУММА СТАВКИ
+          <input class="input" type="number" name="stake" min="1" step="0.01" placeholder="300" required>
+        </label>
+        <div class="span-2 quick-stakes" id="quickStakes">
+          <span class="quick-label">ФЛЭТ:</span>
+          <button type="button" class="quick-chip" data-quick="1">1%</button>
+          <button type="button" class="quick-chip" data-quick="3">3%</button>
+          <button type="button" class="quick-chip" data-quick="5">5%</button>
+          <button type="button" class="quick-chip" data-quick="kelly" title="Критерий Келли">КЭЛЛИ</button>
+          <span class="quick-hint" id="quickHint"></span>
+        </div>
+        <label>ТЕГИ
+          <input class="input" type="text" name="tags" maxlength="60" placeholder="экспресс, лайв, фаворит...">
+          <small class="field-hint">через запятую</small>
+        </label>
+        <label>СТАТУС
+          <select class="input" name="status">
+            <option value="pending">В ИГРЕ</option>
+            <option value="won">ВЫИГРЫШ</option>
+            <option value="lost">ПРОИГРЫШ</option>
+            <option value="void">ВОЗВРАТ</option>
+            <option value="cashout">КЭШАУТ</option>
+          </select>
+        </label>
+        <label class="is-hidden" id="payoutField">ВЫПЛАТА ПРИ КЭШАУТЕ
+          <input class="input" type="number" name="payout" min="0" step="0.01" placeholder="390">
+        </label>
+        <label class="span-2">ЗАМЕТКА
+          <textarea class="input" name="note" rows="2" maxlength="200" placeholder="Причина входа, логика, комментарий..."></textarea>
+        </label>
+      </div>
+      <div class="calc-line" id="betCalc">ПОТЕНЦИАЛЬНЫЙ ВЫИГРЫШ: —</div>
+      <div class="modal-actions">
+        <button class="btn btn-ghost" type="button" data-close>ОТМЕНА</button>
+        <button class="btn btn-primary" type="submit" id="betSubmit">ЗАПИСАТЬ В МАТРИЦУ</button>
+      </div>
+    </form>
+  </dialog>
+
+  <!-- МОДАЛ: ОПЕРАЦИЯ КАПИТАЛА -->
+  <dialog class="modal" id="opDialog">
+    <form id="opForm" class="modal-form" autocomplete="off">
+      <div class="modal-head">
+        <div>
+          <div class="panel-kicker">// ДВИЖЕНИЕ КАПИТАЛА</div>
+          <h3 class="modal-title" id="opDialogTitle">НОВАЯ ОПЕРАЦИЯ</h3>
+        </div>
+        <button class="modal-close" type="button" data-close aria-label="Закрыть">×</button>
+      </div>
+      <div class="form-grid">
+        <label>ТИП ОПЕРАЦИИ
+          <select class="input" name="type" id="opType">
+            <option value="profit">ПРИБЫЛЬ (P&amp;L +)</option>
+            <option value="loss">УБЫТОК (P&amp;L −)</option>
+            <option value="deposit">ПОПОЛНЕНИЕ</option>
+            <option value="withdraw">ВЫВОД</option>
+          </select>
+        </label>
+        <label>ДАТА
+          <input class="input" type="date" name="date" required>
+        </label>
+        <label class="span-2" id="opStrategyField">НАПРАВЛЕНИЕ
+          <select class="input" name="strategyId" id="opStrategyId"></select>
+        </label>
+        <label class="span-2">СУММА
+          <input class="input" type="number" name="amount" min="0.01" step="0.01" placeholder="1000" required>
+        </label>
+        <label class="span-2">КОММЕНТАРИЙ
+          <input class="input" type="text" name="note" maxlength="200" placeholder="Например: фиксация прибыли по BTC">
+        </label>
+      </div>
+      <div class="calc-line" id="opHint">Зафиксированная прибыль по направлению увеличивает капитал.</div>
+      <div class="modal-actions">
+        <button class="btn btn-ghost" type="button" data-close>ОТМЕНА</button>
+        <button class="btn btn-primary" type="submit" id="opSubmit">ЗАПИСАТЬ ОПЕРАЦИЮ</button>
+      </div>
+    </form>
+  </dialog>
+
+  <!-- МОДАЛ: НАПРАВЛЕНИЕ -->
+  <dialog class="modal" id="strategyDialog">
+    <form id="strategyForm" class="modal-form" autocomplete="off">
+      <div class="modal-head">
+        <div>
+          <div class="panel-kicker">// НОВЫЙ КАНАЛ</div>
+          <h3 class="modal-title">НОВОЕ НАПРАВЛЕНИЕ</h3>
+        </div>
+        <button class="modal-close" type="button" data-close aria-label="Закрыть">×</button>
+      </div>
+      <div class="form-grid">
+        <label class="span-2">НАЗВАНИЕ
+          <input class="input" type="text" name="name" maxlength="40" placeholder="Например: Фриланс" required>
+        </label>
+        <label>ФАЗА
+          <select class="input" name="phase">
+            <option value="1">01 — база</option>
+            <option value="2" selected>02 — мульти-капитал</option>
+            <option value="3">03 — пассивный доход</option>
+          </select>
+        </label>
+        <label>БЮДЖЕТ НА МЕСЯЦ (ставки)
+          <input class="input" type="number" name="monthlyBudget" min="0" step="0.01" placeholder="0 — без лимита">
+        </label>
+        <label class="span-2">КОММЕНТАРИЙ
+          <input class="input" type="text" name="note" maxlength="80" placeholder="Краткое описание">
+        </label>
+        <div class="span-2">
+          <div class="field-label">ЦВЕТ КАНАЛА</div>
+          <div class="color-row">
+            <label class="color-swatch"><input type="radio" name="color" value="#00ff66" checked><span style="--sw:#00ff66"></span></label>
+            <label class="color-swatch"><input type="radio" name="color" value="#22d3ee"><span style="--sw:#22d3ee"></span></label>
+            <label class="color-swatch"><input type="radio" name="color" value="#facc15"><span style="--sw:#facc15"></span></label>
+            <label class="color-swatch"><input type="radio" name="color" value="#a78bfa"><span style="--sw:#a78bfa"></span></label>
+            <label class="color-swatch"><input type="radio" name="color" value="#fb7185"><span style="--sw:#fb7185"></span></label>
+            <label class="color-swatch"><input type="radio" name="color" value="#f97316"><span style="--sw:#f97316"></span></label>
+            <label class="color-swatch"><input type="radio" name="color" value="#a855f7"><span style="--sw:#a855f7"></span></label>
+            <label class="color-swatch"><input type="radio" name="color" value="#f472b6"><span style="--sw:#f472b6"></span></label>
+          </div>
+        </div>
+      </div>
+      <div class="modal-actions">
+        <button class="btn btn-ghost" type="button" data-close>ОТМЕНА</button>
+        <button class="btn btn-primary" type="submit">СОЗДАТЬ НАПРАВЛЕНИЕ</button>
+      </div>
+    </form>
+  </dialog>
+
+  <input type="file" id="importFileCsv" accept="text/csv,.csv" hidden>
+
+  <!-- МОДАЛ: ГЛОБАЛЬНЫЙ ПОИСК -->
+  <dialog class="modal" id="globalSearchDialog">
+    <form id="globalSearchForm" class="modal-form" autocomplete="off">
+      <div class="modal-head">
+        <div>
+          <div class="panel-kicker">// ГЛОБАЛЬНЫЙ ПОИСК</div>
+          <h3 class="modal-title">ПОИСК ПО ВСЕМ РАЗДЕЛАМ</h3>
+          <p class="view-sub">Ставки, операции капитала, теги, турниры, заметки.</p>
+        </div>
+        <button class="modal-close" type="button" data-close aria-label="Закрыть">×</button>
+      </div>
+      <div class="form-grid">
+        <label class="span-2">ЗАПРОС
+          <input class="input" type="search" name="query" placeholder="Например: Реал, фаворит, крипто, П1..." autofocus>
+          <small class="field-hint">Нажмите Esc для закрытия</small>
+        </label>
+      </div>
+      <div class="modal-actions">
+        <button class="btn btn-ghost" type="button" data-close>ЗАКРЫТЬ</button>
+      </div>
+      <div class="global-search-results" id="globalSearchResults"></div>
+    </form>
+  </dialog>
+
+  <div class="toasts" id="toasts" aria-live="polite"></div>
+
+  <!-- SheetJS для экспорта в Excel/XLSX (CDN с локальным fallback) -->
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+  <script>
+    if (typeof XLSX === 'undefined') {
+      document.write('<script src="js/vendor/xlsx.full.min.js"><\/script>');
+    }
+  </script>
+
+  <script src="js/app.js"></script>
+  <script>
+    /* ---------- Service Worker ---------- */
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('./sw.js').then(function (registration) {
+        // Если есть обновлённый SW, предлагаем активировать
+        if (registration.waiting) {
+          registration.waiting.postMessage({ type: 'SKIP_WAITING' });
+        }
+        registration.addEventListener('updatefound', function () {
+          var installingWorker = registration.installing;
+          installingWorker.addEventListener('statechange', function () {
+            if (installingWorker.state === 'installed' && navigator.serviceWorker.controller) {
+              // Новая версия установлена — уведомляем пользователя
+              if (window.showToast) {
+                window.showToast('Доступна новая версия. Обновите страницу.', null, function () {
+                  window.location.reload();
+                });
+              }
+            }
+          });
+        });
+      }).catch(function (e) {
+        console.warn('Service Worker registration failed:', e);
+      });
+
+      // Слушаем сообщение от SW о новой версии
+      navigator.serviceWorker.addEventListener('message', function (event) {
+        if (event.data && event.data.type === 'SW_UPDATED') {
+          if (window.showToast) {
+            window.showToast('Приложение обновлено. Перезагрузите страницу.', null, function () {
+              window.location.reload();
+            });
+          }
+        }
+      });
+    }
+
+    /* ---------- PWA Install Prompt ---------- */
+    var deferredPrompt;
+    var installBtn = document.createElement('button');
+    installBtn.id = 'pwa-install-btn';
+    installBtn.className = 'btn btn-ghost';
+    installBtn.type = 'button';
+    installBtn.style.display = 'none';
+    installBtn.textContent = 'УСТАНОВИТЬ ПРИЛОЖЕНИЕ';
+    installBtn.title = 'Установить Архитектора Капитала как PWA';
+    document.body.appendChild(installBtn);
+
+    window.addEventListener('beforeinstallprompt', function (e) {
+      e.preventDefault();
+      deferredPrompt = e;
+      installBtn.style.display = 'inline-flex';
+    });
+
+    installBtn.addEventListener('click', function () {
+      if (deferredPrompt) {
+        deferredPrompt.prompt();
+        deferredPrompt.userChoice.then(function (choiceResult) {
+          if (choiceResult.outcome === 'accepted') {
+            installBtn.style.display = 'none';
+            if (window.showToast) window.showToast('Приложение установлено');
+          } else {
+            installBtn.style.display = 'none';
+          }
+          deferredPrompt = null;
+        });
+      }
+    });
+
+    // Скрываем кнопку если приложение уже установлено
+    if (window.matchMedia('(display-mode: standalone)').matches) {
+      installBtn.style.display = 'none';
+    }
+  </script>
+</body>
+</html>

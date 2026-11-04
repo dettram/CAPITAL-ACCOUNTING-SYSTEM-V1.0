@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+  <!-- Знак белорусского рубля — оптимизировано под интерфейс -->
+  <line x1="6" y1="4" x2="6" y2="20"/>
+  <line x1="6" y1="4" x2="14" y2="4"/>
+  <line x1="6" y1="12" x2="12" y2="12"/>
+  <path d="M14 4 Q18 4 18 12 Q14 12 14 4 Z"/>
+  <path d="M14 12 Q18 12 18 20 Q14 20 14 12 Z"/>
+</svg>

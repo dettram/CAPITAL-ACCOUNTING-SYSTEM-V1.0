@@ -1,0 +1,26 @@
+{
+  "name": "capital-architect-pro",
+  "version": "2.0.0",
+  "description": "Терминальный трекер капитала: ставки, крипто, акции, пассивный доход, аналитика, бюджеты и экспорт отчётов.",
+  "private": true,
+  "scripts": {
+    "lint": "eslint js/app.js tests/test-ui.js",
+    "lint:fix": "eslint js/app.js tests/test-ui.js --fix",
+    "format": "prettier --write js/app.js css/style.css index.html tests/test-ui.js tests/runner-ui.html",
+    "format:check": "prettier --check js/app.js css/style.css index.html tests/test-ui.js tests/runner-ui.html",
+    "type-check": "tsc --noEmit",
+    "test": "echo \"Откройте tests/runner-ui.html в браузере для запуска unit-тестов\"",
+    "test:ci": "echo \"UI-тесты требуют браузера. См. tests/runner-ui.html\"",
+    "e2e": "playwright test",
+    "e2e:headed": "playwright test --headed"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.45.0",
+    "@typescript-eslint/eslint-plugin": "^7.0.0",
+    "@typescript-eslint/parser": "^7.0.0",
+    "eslint": "^8.57.0",
+    "http-server": "^0.13.0",
+    "prettier": "^3.2.5",
+    "typescript": "^5.4.5"
+  }
+}

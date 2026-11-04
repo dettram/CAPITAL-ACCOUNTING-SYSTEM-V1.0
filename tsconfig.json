@@ -1,0 +1,19 @@
+{
+  "compilerOptions": {
+    "target": "ES2021",
+    "module": "ESNext",
+    "lib": ["DOM", "ES2021"],
+    "strict": true,
+    "noImplicitAny": true,
+    "allowJs": true,
+    "checkJs": true,
+    "skipLibCheck": true,
+    "esModuleInterop": true,
+    "forceConsistentCasingInFileNames": true,
+    "outDir": "./dist",
+    "rootDir": ".",
+    "noEmit": true,
+    "include": ["js/**/*.js", "js/**/*.ts", "tests/**/*.js"],
+    "exclude": ["node_modules", "js/vendor"]
+  }
+}

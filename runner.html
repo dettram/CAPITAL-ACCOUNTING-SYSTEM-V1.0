@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<title>Тесты Capital-Architect PRO</title>
+<style>
+  body{font-family:"Cascadia Mono","JetBrains Mono",monospace;background:#030806;color:#d8ffe6;padding:24px;}
+  h1{color:#00ff66;}
+  .pass{color:#00ff66;}
+  .fail{color:#ff3b5c;}
+  #log{white-space:pre-wrap;font-size:13px;line-height:1.5;background:#05120c;padding:12px;border:1px solid rgba(0,255,102,.14);margin-top:16px;}
+</style>
+</head>
+<body>
+<h1>Тесты Capital-Architect PRO</h1>
+<p>Откройте консоль разработчика (F12) для подробного вывода.</p>
+<div id="log"></div>
+<script src="../js/store.js"></script>
+<script src="test-store.js"></script>
+<script>
+  var log = document.getElementById('log');
+  var origLog = console.log;
+  var origError = console.error;
+  console.log = function(msg){ origLog.apply(console, arguments); log.textContent += msg + '\n'; };
+  console.error = function(msg){ origError.apply(console, arguments); log.textContent += msg + '\n'; };
+  window.runTests(window.CA.store);
+</script>
+</body>
+</html>
