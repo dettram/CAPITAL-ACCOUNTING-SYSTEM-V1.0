@@ -699,6 +699,28 @@
 
   <script src="app.js"></script>
   <script>
+    /* ---------- Авто-сброс старых Service Worker при разработке ---------- */
+    (function () {
+      const isDev = window.location.hostname === 'localhost' ||
+                    window.location.hostname === '127.0.0.1' ||
+                    window.location.search.includes('clear-sw=1');
+
+      if (isDev && 'serviceWorker' in navigator) {
+        navigator.serviceWorker.getRegistrations().then(function (registrations) {
+          registrations.forEach(function (registration) {
+            registration.unregister().then(function () {
+              console.log('Service Worker отменён:', registration.scope);
+            });
+          });
+          if (registrations.length > 0) {
+            setTimeout(function () { window.location.reload(); }, 100);
+          }
+        });
+      }
+    })();
+  </script>
+
+  <script>
     /* ---------- Service Worker ---------- */
     if ('serviceWorker' in navigator) {
       navigator.serviceWorker.register('./sw.js').then(function (registration) {
