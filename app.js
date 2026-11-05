@@ -2000,7 +2000,8 @@
         const showCount = Math.min(dayBets.length, 3);
         for (let i = 0; i < showCount; i++) {
           const b = dayBets[i];
-          betMarkup += '<span class="calendar-day-bet ' + b.status + '">' + escHtml(b.status) + '</span>';
+          var st = STATUS[b.status] || {};
+betMarkup += '<span class="calendar-day-bet ' + b.status + '">' + escHtml(st.label || b.status) + '</span>';
         }
         if (dayBets.length > 3) {
           betMarkup += '<span class="calendar-day-bet">+' + (dayBets.length - 3) + '</span>';
