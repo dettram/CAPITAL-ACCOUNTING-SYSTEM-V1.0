@@ -8,12 +8,12 @@ const STATIC_ASSETS = [
   './',
   './index.html',
   './offline.html',
-  './css/style.css',
-  './js/app.js',
+  './style.css',
+  './app.js',
   './manifest.json',
-  './assets/neo-kannep-mark.svg',
-  './assets/byn-sign.svg',
-  './assets/byn-icon.svg'
+  './neo-kannep-mark.svg',
+  './byn-sign.svg',
+  './byn-icon.svg'
 ];
 
 // Установка: кэшируем статические ассеты
