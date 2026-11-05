@@ -692,6 +692,7 @@
   <input type="file" id="importFileCsv" accept="text/csv,.csv" hidden>
 
   <!-- МОДАЛ: ГЛОБАЛЬНЫЙ ПОИСК (МАТРИЦА) -->
+  <!-- МОДАЛ: ГЛОБАЛЬНЫЙ ПОИСК (МАТРИЦА) -->
   <dialog class="modal matrix-search-modal" id="globalSearchDialog">
     <form id="globalSearchForm" class="modal-form matrix-search-form" autocomplete="off">
       <div class="modal-head matrix-head">
@@ -702,6 +703,22 @@
         </div>
         <button class="modal-close matrix-close" type="button" data-close aria-label="Закрыть">⌫</button>
       </div>
+
+      <!-- Матричный дождь на фоне -->
+      <canvas class="matrix-rain" id="matrixSearchRain" aria-hidden="true"></canvas>
+
+      <div class="form-grid matrix-grid">
+        <label class="span-2 matrix-label">ЗАПРОС</label>
+        <div class="matrix-input-wrap">
+          <input class="input matrix-input" type="search" name="query" placeholder="ВВЕДИТЕ ЗАПРОС..." autofocus>
+          <span class="matrix-cursor" id="searchCursor">_</span>
+        </div>
+        <small class="field-hint matrix-hint">НАЖМИТЕ Esc ДЛЯ ЗАКРЫТИЯ · CTRL+K ДЛЯ ВЫЗОВА</small>
+      </div>
+
+      <div class="global-search-results matrix-results" id="globalSearchResults"></div>
+    </form>
+  </dialog>
 
       <!-- Матричный дождь на фоне -->
       <canvas class="matrix-rain" id="matrixSearchRain" aria-hidden="true"></canvas>
