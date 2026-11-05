@@ -1751,3 +1751,180 @@ th.sortable[data-sort].active .sort-indicator { opacity: 1; color: var(--accent)
 }
 
 @keyframes pulse { 0%, 100% { opacity: 0.6; } 50% { opacity: 1; } }
+
+/* ---------- Поиск в стиле матрицы ---------- */
+.matrix-search-modal {
+  border: 1px solid var(--line);
+  box-shadow: 0 0 40px rgba(0, 255, 102, 0.15);
+  background: #030806;
+  width: min(720px, 92vw);
+  max-height: 85vh;
+  overflow-y: auto;
+}
+
+.matrix-head {
+  border-bottom: 1px solid var(--line);
+  padding: 14px 18px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: rgba(5, 18, 12, 0.6);
+}
+
+.matrix-kicker {
+  font-size: 9px;
+  color: #00ff66;
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+  margin: 0 0 4px 0;
+  text-shadow: 0 0 10px rgba(0, 255, 102, 0.35);
+}
+
+.matrix-title {
+  font-size: 16px;
+  color: #d8ffe6;
+  margin: 0 0 4px 0;
+  letter-spacing: 0.05em;
+}
+
+.matrix-sub {
+  font-size: 10px;
+  color: #7fa98d;
+  margin: 0;
+  letter-spacing: 0.04em;
+}
+
+.matrix-close {
+  background: transparent;
+  border: 1px solid var(--line);
+  color: #00ff66;
+  width: 32px;
+  height: 32px;
+  border-radius: 2px;
+  cursor: pointer;
+  font-size: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.matrix-close:hover {
+  background: rgba(0, 255, 102, 0.1);
+}
+
+.matrix-rain {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 0;
+  pointer-events: none;
+  opacity: 0.25;
+}
+
+.modal-form.matrix-search-form {
+  position: relative;
+  z-index: 1;
+  padding: 20px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  max-height: 85vh;
+  overflow-y: auto;
+}
+
+.matrix-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  align-items: flex-start;
+}
+
+.matrix-label {
+  font-size: 9px;
+  color: #00ff66;
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
+  margin: 0;
+  font-weight: 700;
+}
+
+.matrix-input-wrap {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+}
+
+.matrix-input {
+  background: rgba(0, 20, 10, 0.4);
+  border: 1px solid #00ff66;
+  color: #00ff66;
+  padding: 10px 14px;
+  font-size: 15px;
+  font-family: "Cascadia Mono", "JetBrains Mono", monospace;
+  border-radius: 2px;
+  box-shadow: 0 0 15px rgba(0, 255, 102, 0.2);
+  width: 320px;
+  outline: none;
+}
+
+.matrix-input:focus {
+  border-color: #00ff66;
+  box-shadow: 0 0 25px rgba(0, 255, 102, 0.45);
+}
+
+.matrix-cursor {
+  color: #00ff66;
+  margin-left: 2px;
+  font-size: 15px;
+  font-weight: 700;
+  animation: blink 0.8s infinite;
+}
+
+@keyframes blink {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.2;
+  }
+}
+
+.matrix-hint {
+  font-size: 9px;
+  color: #4d725a;
+  margin: 0;
+  letter-spacing: 0.08em;
+}
+
+.matrix-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 8px;
+}
+
+.matrix-close-btn {
+  background: transparent;
+  border: 1px solid var(--line);
+  color: #d8ffe6;
+  padding: 6px 14px;
+  border-radius: 2px;
+  font-size: 10px;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+
+.matrix-close-btn:hover {
+  border-color: #00ff66;
+  color: #00ff66;
+  box-shadow: 0 0 15px rgba(0, 255, 102, 0.3);
+}
+
+.matrix-results {
+  margin-top: 4px;
+  max-height: 40vh;
+  overflow-y: auto;
+  border-top: 1px solid var(--line);
+  padding-top: 12px;
+}
