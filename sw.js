@@ -6,6 +6,7 @@ const OFFLINE_URL = './offline.html';
 // Статические ассеты для кэширования при установке
 const STATIC_ASSETS = [
   './',
+  './index.html',
   './offline.html',
   './style.css',
   './app.js',
@@ -47,7 +48,7 @@ self.addEventListener('activate', (event) => {
   );
 });
 
-// Fetch: стратегия "Cache First" для статических ассетов, "Network First" с fallback для остального
+// Fetch: стратегия для статических файлов
 self.addEventListener('fetch', (event) => {
   const { request } = event;
   const url = new URL(request.url);
@@ -55,8 +56,9 @@ self.addEventListener('fetch', (event) => {
   // Пропускаем не-HTTP(S) запросы
   if (!url.protocol.startsWith('http')) return;
 
-  // Стратегия 1: Cache First для статических файлов (кроме HTML)
+  // Стратегия 1: Cache First для статических файлов
   if (request.method === 'GET' && (
+    url.pathname.endsWith('.html') ||
     url.pathname.endsWith('.css') ||
     url.pathname.endsWith('.js') ||
     url.pathname.endsWith('.svg') ||
@@ -76,30 +78,39 @@ self.addEventListener('fetch', (event) => {
               }
               return networkResponse;
             })
-            .catch(() => new Response('Офлайн: ресурс недоступен', { status: 503 }));
+            .catch(() => {
+              if (request.mode === 'navigate' || url.pathname.endsWith('.html')) {
+                return caches.match(OFFLINE_URL);
+              }
+              return new Response('Офлайн: ресурс недоступен', { status: 503, statusText: 'Offline' });
+            });
         })
     );
     return;
   }
 
-  // Стратегия 2: HTML — всегда Network First (свежая страница при каждой перезагрузке)
-  if (request.method === 'GET' && (url.pathname.endsWith('.html') || url.pathname === '/')) {
-    event.respondWith(
-      fetch(request)
-        .then((networkResponse) => {
-          if (networkResponse.ok) {
-            const clone = networkResponse.clone();
-            caches.open(CACHE_NAME).then((cache) => cache.put(request, clone));
-          }
-          return networkResponse;
-        })
-        .catch(() => {
-          return caches.match(request)
-            .then((cached) => cached || caches.match(OFFLINE_URL));
-        })
-    );
-    return;
-  }
+  // Стратегия 2: Network First для остальных запросов (например, API валют)
+  event.respondWith(
+    fetch(request)
+      .then((networkResponse) => {
+        if (networkResponse.ok) {
+          const clone = networkResponse.clone();
+          caches.open(CACHE_NAME).then((cache) => cache.put(request, clone));
+        }
+        return networkResponse;
+      })
+      .catch(() => {
+        return caches.match(request)
+          .then((cachedResponse) => {
+            if (cachedResponse) return cachedResponse;
+            if (request.mode === 'navigate') {
+              return caches.match(OFFLINE_URL);
+            }
+            return new Response('Офлайн: ресурс недоступен', { status: 503, statusText: 'Offline' });
+          });
+      })
+  );
+});
 
 // Слушаем сообщения от клиента
 self.addEventListener('message', (event) => {
