@@ -131,24 +131,20 @@
     return fetch('https://www.nbrb.by/API/ExRates/Rates?Periodicity=0')
       .then(function (response) { return response.json(); })
       .then(function (data) {
-        // НБРБ возвращает курсы относительно BYN
-        // Cur_OfficialRate - курс за Cur_Scale единиц валюты к BYN
-        const nbrbRates = {}; // валюта -> 1 единица валюты в BYN
+        const nbrbRates = {};
         data.forEach(function (item) {
           var code = item.Cur_Abbreviation;
           var scale = item.Cur_Scale || 1;
           var rate = item.Cur_OfficialRate || 0;
           if (rate > 0) {
-            nbrbRates[code] = rate / scale; // 1 единица валюты в BYN
+            nbrbRates[code] = rate / scale;
           }
         });
-        // BYN всегда = 1 BYN
         nbrbRates['BYN'] = 1;
 
         const symbolMap = { USD: '$', EUR: '€', RUB: '₽', BYN: 'BYN' };
         const rates = {};
 
-        // Курс базовой валюты в BYN
         var baseCode = base === '₽' ? 'RUB' : (base === '$' ? 'USD' : (base === '€' ? 'EUR' : 'BYN'));
         var baseRateInBYN = nbrbRates[baseCode] || 1;
 
@@ -156,7 +152,6 @@
           var sym = symbolMap[code];
           var rateInBYN = nbrbRates[code];
           if (rateInBYN && baseRateInBYN) {
-            // 1 базовая валюта = rateInBYN / baseRateInBYN целевой валюты
             rates[sym] = round2(rateInBYN / baseRateInBYN);
           }
         });
@@ -404,12 +399,10 @@
     return idbGet().then(function (raw) {
       if (!raw) return defaultState(true);
 
-      // Пытаемся распарсить как обычный JSON
       let parsed;
       try {
         parsed = JSON.parse(raw);
       } catch (e) {
-        // Не валидный JSON — возможно, данные зашифрованы
         const password = prompt('Введите пароль для расшифровки данных:');
         if (!password) return defaultState(true);
         return decryptString(raw, password).then(function (decrypted) {
@@ -1115,7 +1108,6 @@
       renderArchive();
     });
 
-    /* ---------- групповые действия со ставками ---------- */
     ui.selectedBets = [];
 
     function updateBulkCounter() {
@@ -1165,7 +1157,6 @@
       else if (ui.tab === 'calendar') renderCalendar();
     }, 180));
 
-    /* Подтверждение при закрытии вкладки, если есть данные */
     window.addEventListener('beforeunload', function (e) {
       try {
         if (state && state.bets && state.bets.length > 0) {
@@ -1175,7 +1166,6 @@
       } catch (e) { /* ignore */ }
     });
 
-    /* Глобальный поиск по Ctrl+K */
     window.addEventListener('keydown', function (e) {
       if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
         e.preventDefault();
@@ -1198,7 +1188,6 @@
       }
     }
 
-    /* Обработка кликов по результатам глобального поиска */
     document.addEventListener('click', function (e) {
       const gotoBtn = e.target.closest('[data-action="goto-bet"], [data-action="goto-op"]');
       if (gotoBtn) {
@@ -1685,7 +1674,6 @@
     });
     if (duplicate) return toast('Такая ставка уже существует на этот день', 'error');
 
-    // Проверка месячного бюджета направления
     const strat = strategyById(get('strategyId'));
     if (strat && strat.monthlyBudget > 0) {
       const monthKeyNow = todayISO().slice(0, 7);
@@ -1956,7 +1944,7 @@
     const month = Number(ui.calendarDate.slice(5, 7)) - 1;
     const firstDay = new Date(year, month, 1);
     const lastDay = new Date(year, month + 1, 0);
-    const startOffset = firstDay.getDay(); // 0 = вс
+    const startOffset = firstDay.getDay();
     const totalDays = lastDay.getDate();
     const today = todayISO();
 
@@ -1973,12 +1961,10 @@
       html += '<div class="calendar-weekday">' + w + '</div>';
     });
 
-    // Пустые ячейки перед первым днём
     for (let i = 0; i < startOffset; i++) {
       html += '<div class="calendar-day empty"></div>';
     }
 
-    // Группируем ставки по датам
     const betsByDate = {};
     state.bets.forEach(function (b) {
       if (b.archived) return;
@@ -2001,7 +1987,7 @@
         for (let i = 0; i < showCount; i++) {
           const b = dayBets[i];
           var st = STATUS[b.status] || {};
-betMarkup += '<span class="calendar-day-bet ' + b.status + '">' + escHtml(st.label || b.status) + '</span>';
+          betMarkup += '<span class="calendar-day-bet ' + b.status + '">' + escHtml(st.label || b.status) + '</span>';
         }
         if (dayBets.length > 3) {
           betMarkup += '<span class="calendar-day-bet">+' + (dayBets.length - 3) + '</span>';
@@ -2017,7 +2003,6 @@ betMarkup += '<span class="calendar-day-bet ' + b.status + '">' + escHtml(st.lab
 
     grid.innerHTML = html;
 
-    // Детали выбранного дня
     if (detail && ui.calendarSelectedDate) {
       renderCalendarDayDetail(ui.calendarSelectedDate);
     } else if (detail) {
@@ -2220,7 +2205,7 @@ betMarkup += '<span class="calendar-day-bet ' + b.status + '">' + escHtml(st.lab
     download('capital-architect-analytics-' + todayISO() + '.csv', csv, 'text/csv;charset=utf-8');
     toast('Аналитика экспортирована в CSV');
   }
-    function printAnalytics() {
+  function printAnalytics() {
     const c = calc(state);
     const st = state.settings;
     const stats = strategyStats(state);
@@ -2336,34 +2321,6 @@ betMarkup += '<span class="calendar-day-bet ' + b.status + '">' + escHtml(st.lab
     var w = window.open('', '_blank', 'width=1000,height=800');
     w.document.write(html);
     w.document.close();
-  }
-    const printContent =
-      '<h1>ОТЧЁТ АНАЛИТИКИ — ' + escHtml(state.settings.projectName) + '</h1>' +
-      '<p>Сформировано ' + new Date().toLocaleString('ru-RU') + '</p>' +
-      '<h2>Кратко</h2>' +
-      '<p>Капитал: ' + money(m.capital) + ' · Прибыль: ' + signedMoney(m.profit) + ' · ROI: ' + pct(m.roi) + ' · Winrate: ' + pct(m.winrate) + '</p>' +
-      sectionHtml('Турниры', an.leagues) +
-      sectionHtml('Рынки', an.markets) +
-      sectionHtml('Коэффициенты', an.odds) +
-      sectionHtml('Дни недели', an.weekdays) +
-      sectionHtml('Теги', an.tags) +
-      sectionHtml('Месяцы', an.months);
-    const win = window.open('', '_blank');
-    win.document.write(
-      '<!DOCTYPE html><html lang="ru"><head><meta charset="UTF-8"><title>Отчёт аналитики</title>' +
-      '<style>' +
-      'body{font-family:"Cascadia Mono","JetBrains Mono",monospace;background:#030806;color:#d8ffe6;padding:24px;}' +
-      'h1{color:#00ff66;text-shadow:0 0 12px rgba(0,255,102,.3);}' +
-      'h2{color:#22d3ee;margin-top:24px;}' +
-      'h3{color:#facc15;margin-top:18px;font-size:13px;}' +
-      'table{border-collapse:collapse;width:100%;margin-top:8px;font-size:11px;}' +
-      'th,td{border:1px solid rgba(0,255,102,.2);padding:6px 8px;text-align:left;}' +
-      'th{background:rgba(0,255,102,.1);color:#00ff66;}' +
-      'td.num{text-align:right;}' +
-      '@media print{body{background:#fff;color:#000;}h1{color:#000;}h2{color:#333;}h3{color:#555;}th{background:#eee;color:#000;}td{color:#000;}}' +
-      '</style></head><body>' + printContent + '<script>window.print();</script></body></html>'
-    );
-    win.document.close();
   }
 
   /* ============================================================
@@ -2610,10 +2567,8 @@ betMarkup += '<span class="calendar-day-bet ' + b.status + '">' + escHtml(st.lab
     const dlg = $('#globalSearchDialog');
     if (dlg) dlg.close();
     setTab('bets');
-    // Подсветить ставку в таблице — просто перерендерим, выделение по id можно добавить позже
     const bet = findBet(id);
     if (bet) {
-      // Открыть диалог редактирования для удобства
       openBetDialog(bet);
     }
   }
