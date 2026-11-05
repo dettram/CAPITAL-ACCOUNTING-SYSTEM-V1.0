@@ -13,7 +13,7 @@
     "outDir": "./dist",
     "rootDir": ".",
     "noEmit": true,
-    "include": ["js/**/*.js", "js/**/*.ts", "tests/**/*.js"],
-    "exclude": ["node_modules", "js/vendor"]
+    "include": ["*.js", "*.ts", "test-*.js"],
+    "exclude": ["node_modules"]
   }
 }
