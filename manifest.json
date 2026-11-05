@@ -7,7 +7,7 @@
   "background_color": "#030806",
   "theme_color": "#00ff66",
   "orientation": "portrait",
-  "scope": "/"
+  "scope": "/",
   "lang": "ru",
   "dir": "ltr",
   "icons": [
