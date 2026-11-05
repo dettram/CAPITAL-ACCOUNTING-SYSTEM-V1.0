@@ -9,6 +9,34 @@
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' fill='%23030806'/%3E%3Cpath d='M8 32 L32 14 L56 32 L32 50 Z' fill='none' stroke='%2300ff66' stroke-width='3'/%3E%3Ccircle cx='32' cy='32' r='6' fill='%2300ff66'/%3E%3C/svg%3E">
   <link rel="stylesheet" href="style.css">
   <link rel="manifest" href="manifest.json">
+  <!-- Авто-сброс старых Service Worker и кэша при ?clear-sw=1 -->
+  <script>
+    (function () {
+      var urlParams = new URLSearchParams(window.location.search);
+      if (urlParams.get('clear-sw') === '1' || urlParams.get('nocache') === '1') {
+        if ('serviceWorker' in navigator) {
+          navigator.serviceWorker.getRegistrations().then(function (regs) {
+            regs.forEach(function (r) {
+              r.unregister().then(function () {
+                console.log('Service Worker отменён:', r.scope);
+              });
+            });
+          });
+        }
+        if ('caches' in window) {
+          caches.keys().then(function (keys) {
+            keys.forEach(function (key) {
+              caches.delete(key);
+              console.log('Кэш удалён:', key);
+            });
+          });
+        }
+        setTimeout(function () {
+          window.location.reload();
+        }, 300);
+      }
+    })();
+  </script>
 </head>
 <body data-accent="green">
   <canvas id="matrix" aria-hidden="true"></canvas>
@@ -698,28 +726,6 @@
   </script>
 
   <script src="app.js"></script>
-  <script>
-    /* ---------- Авто-сброс старых Service Worker при разработке ---------- */
-    (function () {
-      const isDev = window.location.hostname === 'localhost' ||
-                    window.location.hostname === '127.0.0.1' ||
-                    window.location.search.includes('clear-sw=1');
-
-      if (isDev && 'serviceWorker' in navigator) {
-        navigator.serviceWorker.getRegistrations().then(function (registrations) {
-          registrations.forEach(function (registration) {
-            registration.unregister().then(function () {
-              console.log('Service Worker отменён:', registration.scope);
-            });
-          });
-          if (registrations.length > 0) {
-            setTimeout(function () { window.location.reload(); }, 100);
-          }
-        });
-      }
-    })();
-  </script>
-
   <script>
     /* ---------- Service Worker ---------- */
     if ('serviceWorker' in navigator) {
