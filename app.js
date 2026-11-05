@@ -2220,18 +2220,123 @@ betMarkup += '<span class="calendar-day-bet ' + b.status + '">' + escHtml(st.lab
     download('capital-architect-analytics-' + todayISO() + '.csv', csv, 'text/csv;charset=utf-8');
     toast('Аналитика экспортирована в CSV');
   }
-  function printAnalytics() {
-    const an = analytics(state);
-    const m = calc(state);
-    const sectionHtml = function (title, rows) {
-      if (!rows.length) return '';
-      return '<h3>' + escHtml(title) + '</h3>' +
-        '<table class="print-table"><thead><tr><th>Параметр</th><th>Ставок</th><th>Выиграно</th><th>Winrate</th><th>Оборот</th><th>P&L</th><th>ROI</th></tr></thead><tbody>' +
-        rows.map(function (r) {
-          return '<tr><td>' + escHtml(r.key) + '</td><td>' + r.n + '</td><td>' + r.won + '</td><td>' + pct(r.winrate) + '</td><td>' + money(r.turnover) + '</td><td>' + signedMoney(r.profit) + '</td><td>' + signedPct(r.roi) + '</td></tr>';
-        }).join('') +
-        '</tbody></table>';
+    function printAnalytics() {
+    const c = calc(state);
+    const st = state.settings;
+    const stats = strategyStats(state);
+    const dateStr = todayISO();
+
+    const winHtml = function (v) {
+      if (v > 0) return '<span style="color:#00ff66">+' + signedMoney(v) + '</span>';
+      if (v < 0) return '<span style="color:#ff3b5c">' + signedMoney(v) + '</span>';
+      return '<span style="color:#7fa98d">—</span>';
     };
+
+    const betsRows = state.bets.filter(function (b) { return !b.archived; }).map(function (b) {
+      var s = strategyNameLocal(b.strategyId);
+      var p = betProfit(b);
+      var stt = STATUS[b.status] || {};
+      return '<tr>' +
+        '<td>' + escHtml(b.date) + '</td>' +
+        '<td>' + escHtml(s) + '</td>' +
+        '<td>' + escHtml(b.event) + '</td>' +
+        '<td>' + escHtml(b.market) + '</td>' +
+        '<td>' + num(b.odds).toFixed(2) + '</td>' +
+        '<td>' + formatMoney(b.stake, st.currency) + '</td>' +
+        '<td><span class="badge badge-' + b.status + '">' + escHtml(stt.label || b.status) + '</span></td>' +
+        '<td>' + winHtml(p) + '</td>' +
+        '</tr>';
+    }).join('');
+
+    const opsRows = state.operations.filter(function (o) { return !o.archived; }).map(function (o) {
+      var s = o.strategyId ? strategyNameLocal(o.strategyId) : '—';
+      var signed = opSigned(o);
+      return '<tr>' +
+        '<td>' + escHtml(o.date) + '</td>' +
+        '<td>' + escHtml(o.type) + '</td>' +
+        '<td>' + escHtml(s) + '</td>' +
+        '<td>' + winHtml(signed) + '</td>' +
+        '<td>' + escHtml(o.note || '') + '</td>' +
+        '</tr>';
+    }).join('');
+
+    var html = '<!DOCTYPE html><html lang="ru"><head><meta charset="UTF-8"><title>Отчёт за всё время — ' + escHtml(st.projectName) + '</title><style>' +
+      '@page { size: A4; margin: 16mm; }' +
+      'body { background:#030806; color:#d8ffe6; font-family:"Cascadia Mono","JetBrains Mono","Consolas",monospace; font-size:10px; margin:0; }' +
+      '@media print { .no-print { display:none !important; } .report-btn { display:none; } }' +
+      '.report { padding:20px; }' +
+      '.report-head { border:1px solid var(--line); padding:18px; margin-bottom:22px; background:rgba(5,18,12,0.7); }' +
+      '.report-title { font-size:21px; color:#00ff66; text-transform:uppercase; letter-spacing:0.12em; margin:0 0 6px 0; }' +
+      '.report-sub { color:#7fa98d; font-size:10px; margin:0; }' +
+      '.kpi { display:flex; flex-wrap:wrap; gap:10px; margin-bottom:22px; }' +
+      '.kpi-item { flex:1 1 130px; border:1px solid var(--line); padding:12px 10px; background:rgba(5,18,12,0.6); }' +
+      '.kpi-label { font-size:8px; color:#7fa98d; text-transform:uppercase; margin-bottom:3px; letter-spacing:0.05em; }' +
+      '.kpi-value { font-size:14px; font-weight:700; color:#d8ffe6; }' +
+      '.kpi-value.up { color:#00ff66; } .kpi-value.down { color:#ff3b5c; }' +
+      'table { width:100%; border-collapse:collapse; margin-bottom:22px; }' +
+      'th, td { border:1px solid var(--line); padding:5px 7px; text-align:left; font-size:9px; }' +
+      'th { background:rgba(0,255,102,0.12); color:#00ff66; text-transform:uppercase; font-size:8px; }' +
+      'tr:nth-child(even) td { background:rgba(255,255,255,0.03); }' +
+      '.section { margin-bottom:24px; }' +
+      '.section-title { font-size:13px; color:#00ff66; border-bottom:1px solid var(--line); padding-bottom:5px; margin-bottom:12px; text-transform:uppercase; letter-spacing:0.08em; }' +
+      '.badge { display:inline-block; padding:1px 6px; border-radius:2px; font-size:8px; font-weight:700; text-transform:uppercase; }' +
+      '.badge.won { background:rgba(0,255,102,0.15); color:#00ff66; border:1px solid rgba(0,255,102,0.35); }' +
+      '.badge.lost { background:rgba(255,59,92,0.15); color:#ff3b5c; border:1px solid rgba(255,59,92,0.35); }' +
+      '.badge.pending { background:rgba(255,204,77,0.15); color:#ffcc4d; border:1px solid rgba(255,204,77,0.35); }' +
+      '.badge.void { background:rgba(127,169,141,0.15); color:#7fa98d; border:1px solid rgba(127,169,141,0.35); }' +
+      '.badge.cashout { background:rgba(34,211,238,0.15); color:#22d3ee; border:1px solid rgba(34,211,238,0.35); }' +
+      '.strategies { display:flex; flex-wrap:wrap; gap:10px; margin-bottom:22px; }' +
+      '.strategy-card { flex:1 1 150px; border:1px solid var(--line); padding:11px 9px; background:rgba(5,18,12,0.6); }' +
+      '.strategy-name { font-weight:700; color:#d8ffe6; margin-bottom:5px; font-size:11px; }' +
+      '.strategy-stat { font-size:9px; color:#7fa98d; margin-bottom:2px; }' +
+      '.report-btn { display:inline-block; margin-top:16px; padding:10px 18px; background:#00ff66; color:#021008; text-decoration:none; font-weight:700; font-size:11px; text-transform:uppercase; border-radius:2px; cursor:pointer; border:none; font-family:inherit; }' +
+      '.report-btn:hover { box-shadow:0 0 20px rgba(0,255,102,0.5); }' +
+      '</style></head><body><div class="report">' +
+      '<div class="report-head">' +
+      '<h1 class="report-title">АРХИТЕКТОР КАПИТАЛА PRO — ОТЧЁТ ЗА ВСЁ ВРЕМЯ</h1>' +
+      '<p class="report-sub">' + escHtml(st.projectName) + ' &middot; ' + dateStr + ' &middot; Капитал: ' + formatMoney(c.capital, st.currency) + '</p>' +
+      '</div>' +
+
+      '<div class="kpi">' +
+      '<div class="kpi-item"><div class="kpi-label">Стартовый капитал</div><div class="kpi-value">' + formatMoney(c.startCapital, st.currency) + '</div></div>' +
+      '<div class="kpi-item"><div class="kpi-label">Текущий капитал</div><div class="kpi-value ' + (c.profit >= 0 ? 'up' : 'down') + '">' + formatMoney(c.capital, st.currency) + '</div></div>' +
+      '<div class="kpi-item"><div class="kpi-label">Чистая прибыль</div><div class="kpi-value ' + (c.profit >= 0 ? 'up' : 'down') + '">' + signedMoney(c.profit) + '</div></div>' +
+      '<div class="kpi-item"><div class="kpi-label">ROI</div><div class="kpi-value">' + pct(c.roi) + '</div></div>' +
+      '<div class="kpi-item"><div class="kpi-label">Ставок</div><div class="kpi-value">' + c.settledCount + '</div></div>' +
+      '<div class="kpi-item"><div class="kpi-label">Винрейт</div><div class="kpi-value">' + pct(c.winrate) + '</div></div>' +
+      '<div class="kpi-item"><div class="kpi-label">Макс. просадка</div><div class="kpi-value">' + pct(c.maxDrawdown) + '</div></div>' +
+      '<div class="kpi-item"><div class="kpi-label">Оборот</div><div class="kpi-value">' + formatMoney(c.turnover, st.currency) + '</div></div>' +
+      '</div>' +
+
+      '<div class="section"><div class="section-title">Направления</div><div class="strategies">' +
+      stats.map(function (s) {
+        return '<div class="strategy-card">' +
+          '<div class="strategy-name">' + escHtml(s.name) + '</div>' +
+          '<div class="strategy-stat">Прибыль: ' + signedMoney(s.profit) + '</div>' +
+          '<div class="strategy-stat">Ставок: ' + s.bets + ' &middot; Операций: ' + s.ops + '</div>' +
+          '<div class="strategy-stat">Доля: ' + pct(s.share) + '</div>' +
+          '</div>';
+      }).join('') +
+      '</div></div>' +
+
+      '<div class="section"><div class="section-title">Все ставки (' + state.bets.filter(function (b) { return !b.archived; }).length + ')</div>' +
+      '<table><thead><tr><th>Дата</th><th>Направление</th><th>Событие</th><th>Рынок</th><th>Кэф</th><th>Ставка</th><th>Статус</th><th>P&L</th></tr></thead><tbody>' +
+      betsRows +
+      '</tbody></table></div>' +
+
+      '<div class="section"><div class="section-title">Операции капитала (' + state.operations.filter(function (o) { return !o.archived; }).length + ')</div>' +
+      '<table><thead><tr><th>Дата</th><th>Тип</th><th>Направление</th><th>Сумма</th><th>Заметка</th></tr></thead><tbody>' +
+      opsRows +
+      '</tbody></table></div>' +
+
+      '<button class="report-btn no-print" onclick="window.print()">РАСПЕЧАТАТЬ / СОХРАНИТЬ PDF</button>' +
+      '</div><script>window.onload=function(){window.print();}</script>' +
+      '</body></html>';
+
+    var w = window.open('', '_blank', 'width=1000,height=800');
+    w.document.write(html);
+    w.document.close();
+  }
     const printContent =
       '<h1>ОТЧЁТ АНАЛИТИКИ — ' + escHtml(state.settings.projectName) + '</h1>' +
       '<p>Сформировано ' + new Date().toLocaleString('ru-RU') + '</p>' +
