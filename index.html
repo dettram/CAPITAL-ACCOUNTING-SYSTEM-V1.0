@@ -9,7 +9,6 @@
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' fill='%23030806'/%3E%3Cpath d='M8 32 L32 14 L56 32 L32 50 Z' fill='none' stroke='%2300ff66' stroke-width='3'/%3E%3Ccircle cx='32' cy='32' r='6' fill='%2300ff66'/%3E%3C/svg%3E">
   <link rel="stylesheet" href="style.css">
   <link rel="manifest" href="manifest.json">
-  <!-- Авто-сброс старых Service Worker и кэша при ?clear-sw=1 -->
   <script>
     (function () {
       var urlParams = new URLSearchParams(window.location.search);
@@ -717,43 +716,9 @@
       <div class="global-search-results matrix-results" id="globalSearchResults"></div>
     </form>
   </dialog>
-  
-      <!-- Матричный дождь на фоне -->
-      <canvas class="matrix-rain" id="matrixSearchRain" aria-hidden="true"></canvas>
 
-      <div class="form-grid matrix-grid">
-        <label class="span-2 matrix-label">ЗАПРОС</label>
-        <div class="matrix-input-wrap">
-          <input class="input matrix-input" type="search" name="query" placeholder="ВВЕДИТЕ ЗАПРОС..." autofocus>
-          <span class="matrix-cursor" id="searchCursor">_</span>
-        </div>
-        <small class="field-hint matrix-hint">НАЖМИТЕ Esc ДЛЯ ЗАКРЫТИЯ · CTRL+K ДЛЯ ВЫЗОВА</small>
-      </div>
+  <div class="toasts" id="toasts" aria-live="polite"></div>
 
-      <div class="global-search-results matrix-results" id="globalSearchResults"></div>
-    </form>
-  </dialog>
-
-      <!-- Матричный дождь на фоне -->
-      <canvas class="matrix-rain" id="matrixSearchRain" aria-hidden="true"></canvas>
-
-      <div class="form-grid matrix-grid">
-        <label class="span-2 matrix-label">ЗАПРОС</label>
-        <div class="matrix-input-wrap">
-          <input class="input matrix-input" type="search" name="query" placeholder="ВВЕДИТЕ ЗАПРОС..." autofocus>
-          <span class="matrix-cursor" id="searchCursor">_</span>
-        </div>
-        <small class="field-hint matrix-hint">НАЖМИТЕ Esc ДЛЯ ЗАКРЫТИЯ · CTRL+K ДЛЯ ВЫЗОВА</small>
-      </div>
-
-      <div class="modal-actions matrix-actions">
-        <button class="btn btn-ghost matrix-close-btn" type="button" data-close>ЗАКРЫТЬ СЕССИЮ</button>
-      </div>
-
-      <div class="global-search-results matrix-results" id="globalSearchResults"></div>
-    </form>
-  </dialog>
-  
   <!-- SheetJS для экспорта в Excel/XLSX (CDN с локальным fallback) -->
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
   <script>
@@ -767,7 +732,6 @@
     /* ---------- Service Worker ---------- */
     if ('serviceWorker' in navigator) {
       navigator.serviceWorker.register('./sw.js').then(function (registration) {
-        // Если есть обновлённый SW, предлагаем активировать
         if (registration.waiting) {
           registration.waiting.postMessage({ type: 'SKIP_WAITING' });
         }
@@ -775,7 +739,6 @@
           var installingWorker = registration.installing;
           installingWorker.addEventListener('statechange', function () {
             if (installingWorker.state === 'installed' && navigator.serviceWorker.controller) {
-              // Новая версия установлена — уведомляем пользователя
               if (window.showToast) {
                 window.showToast('Доступна новая версия. Обновите страницу.', null, function () {
                   window.location.reload();
@@ -788,7 +751,6 @@
         console.warn('Service Worker registration failed:', e);
       });
 
-      // Слушаем сообщение от SW о новой версии
       navigator.serviceWorker.addEventListener('message', function (event) {
         if (event.data && event.data.type === 'SW_UPDATED') {
           if (window.showToast) {
@@ -832,7 +794,6 @@
       }
     });
 
-    // Скрываем кнопку если приложение уже установлено
     if (window.matchMedia('(display-mode: standalone)').matches) {
       installBtn.style.display = 'none';
     }
