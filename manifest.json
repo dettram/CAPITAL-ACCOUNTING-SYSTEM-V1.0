@@ -2,12 +2,12 @@
   "name": "Архитектор Капитала PRO",
   "short_name": "Капитал PRO",
   "description": "Терминальный трекер капитала: ставки, крипто, акции, пассивный доход, аналитика, бюджеты и экспорт отчётов.",
-  "start_url": "/CAPITAL-ACCOUNTING-SYSTEM-V2/",
+  "start_url": "/",
   "display": "standalone",
   "background_color": "#030806",
   "theme_color": "#00ff66",
   "orientation": "portrait",
-  "scope": "/CAPITAL-ACCOUNTING-SYSTEM-V2/",
+  "scope": "/"
   "lang": "ru",
   "dir": "ltr",
   "icons": [
