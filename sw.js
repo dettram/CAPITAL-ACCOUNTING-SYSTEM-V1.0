@@ -6,7 +6,6 @@ const OFFLINE_URL = './offline.html';
 // Статические ассеты для кэширования при установке
 const STATIC_ASSETS = [
   './',
-  './index.html',
   './offline.html',
   './style.css',
   './app.js',
@@ -56,9 +55,8 @@ self.addEventListener('fetch', (event) => {
   // Пропускаем не-HTTP(S) запросы
   if (!url.protocol.startsWith('http')) return;
 
-  // Стратегия 1: Cache First для статических файлов
+  // Стратегия 1: Cache First для статических файлов (кроме HTML)
   if (request.method === 'GET' && (
-    url.pathname.endsWith('.html') ||
     url.pathname.endsWith('.css') ||
     url.pathname.endsWith('.js') ||
     url.pathname.endsWith('.svg') ||
@@ -78,39 +76,30 @@ self.addEventListener('fetch', (event) => {
               }
               return networkResponse;
             })
-            .catch(() => {
-              if (request.mode === 'navigate' || url.pathname.endsWith('.html')) {
-                return caches.match(OFFLINE_URL);
-              }
-              return new Response('Офлайн: ресурс недоступен', { status: 503, statusText: 'Offline' });
-            });
+            .catch(() => new Response('Офлайн: ресурс недоступен', { status: 503 }));
         })
     );
     return;
   }
 
-  // Стратегия 2: Network First для остальных запросов
-  event.respondWith(
-    fetch(request)
-      .then((networkResponse) => {
-        if (networkResponse.ok) {
-          const clone = networkResponse.clone();
-          caches.open(CACHE_NAME).then((cache) => cache.put(request, clone));
-        }
-        return networkResponse;
-      })
-      .catch(() => {
-        return caches.match(request)
-          .then((cachedResponse) => {
-            if (cachedResponse) return cachedResponse;
-            if (request.mode === 'navigate') {
-              return caches.match(OFFLINE_URL);
-            }
-            return new Response('Офлайн: ресурс недоступен', { status: 503, statusText: 'Offline' });
-          });
-      })
-  );
-});
+  // Стратегия 2: HTML — всегда Network First (свежая страница при каждой перезагрузке)
+  if (request.method === 'GET' && (url.pathname.endsWith('.html') || url.pathname === '/')) {
+    event.respondWith(
+      fetch(request)
+        .then((networkResponse) => {
+          if (networkResponse.ok) {
+            const clone = networkResponse.clone();
+            caches.open(CACHE_NAME).then((cache) => cache.put(request, clone));
+          }
+          return networkResponse;
+        })
+        .catch(() => {
+          return caches.match(request)
+            .then((cached) => cached || caches.match(OFFLINE_URL));
+        })
+    );
+    return;
+  }
 
 // Слушаем сообщения от клиента
 self.addEventListener('message', (event) => {
