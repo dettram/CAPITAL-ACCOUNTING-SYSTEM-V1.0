@@ -2480,16 +2480,58 @@ betMarkup += '<span class="calendar-day-bet ' + b.status + '">' + escHtml(st.lab
 
   /* ---------- глобальный поиск ---------- */
 
+  /* Матричный дождь на фоне модального поиска */
+  function startMatrixRain(canvasId) {
+    const canvas = $('#' + canvasId);
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    let w, h, cols, drops;
+
+    function resize() {
+      const rect = canvas.parentElement.getBoundingClientRect();
+      w = canvas.width = rect.width;
+      h = canvas.height = rect.height;
+      cols = Math.floor(w / 12) + 1;
+      drops = [];
+      for (let i = 0; i < cols; i++) drops[i] = Math.random() * -h;
+    }
+
+    const chars = '01АБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯ';
+
+    function draw() {
+      ctx.fillStyle = 'rgba(3, 8, 6, 0.12)';
+      ctx.fillRect(0, 0, w, h);
+      ctx.fillStyle = '#00ff66';
+      ctx.font = 'bold 11px monospace';
+      for (let i = 0; i < drops.length; i++) {
+        const text = chars.charAt(Math.floor(Math.random() * chars.length));
+        ctx.fillText(text, i * 12, drops[i] * 12);
+        if (drops[i] * 12 > h && Math.random() > 0.975) drops[i] = 0;
+        drops[i]++;
+      }
+    }
+
+    window.addEventListener('resize', resize);
+    resize();
+    setInterval(draw, 45);
+  }
+
   function openGlobalSearchDialog() {
     const dlg = $('#globalSearchDialog');
-    const form = $('#globalSearchForm');
-    const input = form.elements.query;
-    const results = $('#globalSearchResults');
-    if (!dlg || !form || !input || !results) return;
-    form.reset();
-    results.innerHTML = '';
-    openDialog(dlg);
-    setTimeout(function () { input.focus(); }, 60);
+    const input = $('#globalSearchForm').elements.query;
+    if (dlg) {
+      if (typeof dlg.showModal === 'function') dlg.showModal();
+      else dlg.setAttribute('open', '');
+      if (input) {
+        input.value = '';
+        input.focus();
+      }
+      renderGlobalSearchResults('');
+      if (!$('#matrixSearchRain').dataset.matrixStarted) {
+        $('#matrixSearchRain').dataset.matrixStarted = '1';
+        startMatrixRain('matrixSearchRain');
+      }
+    }
   }
 
   function renderGlobalSearchResults(query) {
