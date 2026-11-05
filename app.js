@@ -967,7 +967,7 @@
   }
   function notify(title, body) {
     if ('Notification' in window && Notification.permission === 'granted') {
-      new Notification(title, { body: body, icon: 'assets/neo-kannep-mark.svg' });
+      new Notification(title, { body: body, icon: 'neo-kannep-mark.svg' });
     }
   }
   function checkNotifications(m) {
@@ -1425,7 +1425,7 @@
         '<div class="protocol-row"><span>Серия</span><b class="' + streakClass + '">' + streakValue + '</b></div>' +
       '</div>' +
       '<blockquote class="mascot-quote">' +
-        '<div class="mascot-mini"><img src="assets/neo-kannep-mark.svg" alt="Neo-Kannep"></div>' +
+        '<div class="mascot-mini"><img src="neo-kannep-mark.svg" alt="Neo-Kannep"></div>' +
         '<div><p>«Система важнее эмоций. Капитал любит холодный расчёт.»</p><cite>NEO-KANNEP // THE ORACLE BROKER</cite></div>' +
       '</blockquote>';
   }
